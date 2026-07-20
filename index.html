@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Formulir Biodata Siswa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{
+  --blue:#2563EB; --blue-dark:#1D4ED8; --blue-soft:#EFF4FF;
+  --white:#FFFFFF; --gray-50:#F8FAFC; --gray-100:#F1F5F9; --gray-200:#E2E8F0;
+  --gray-400:#94A3B8; --gray-500:#64748B; --gray-700:#334155; --gray-900:#0F172A;
+  --green:#16A34A; --red:#DC2626; --shadow:0 10px 30px rgba(37,99,235,.10);
+  --radius:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Poppins',sans-serif;background:linear-gradient(180deg,#EFF4FF 0%, #F8FAFC 320px);color:var(--gray-900);min-height:100vh;padding:24px 16px 60px}
+.wrap{max-width:760px;margin:0 auto}
+
+.hero{background:var(--blue);color:#fff;border-radius:var(--radius);padding:28px 26px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-40px;top:-40px;width:180px;height:180px;background:rgba(255,255,255,.12);border-radius:50%}
+.hero i{font-size:26px;opacity:.9}
+.hero h1{font-size:22px;font-weight:600;margin-top:8px}
+.hero p{font-size:13.5px;opacity:.9;margin-top:6px;max-width:520px;line-height:1.5}
+
+.card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:26px 24px;margin-top:20px}
+.section-title{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;color:var(--blue);margin:6px 0 18px;padding-bottom:12px;border-bottom:2px solid var(--gray-100)}
+.section-title i{width:32px;height:32px;display:grid;place-items:center;background:var(--blue-soft);border-radius:10px;font-size:14px}
+
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px 18px}
+.full{grid-column:1/-1}
+.field label{display:block;font-size:12.5px;font-weight:500;color:var(--gray-700);margin-bottom:6px}
+.field label .req{color:var(--red)}
+.field input,.field select,.field textarea{
+  width:100%;padding:11px 13px;border:1.5px solid var(--gray-200);border-radius:10px;
+  font-family:inherit;font-size:14px;color:var(--gray-900);background:var(--gray-50);transition:.15s}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.field textarea{resize:vertical;min-height:80px}
+.field.error input,.field.error select,.field.error textarea{border-color:var(--red);background:#FEF2F2}
+.err-msg{display:none;font-size:11.5px;color:var(--red);margin-top:5px}
+.field.error .err-msg{display:block}
+.hint{font-size:11px;color:var(--gray-400);margin-top:5px}
+
+.check-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.check-item{display:flex;align-items:center;gap:9px;padding:10px 12px;border:1.5px solid var(--gray-200);border-radius:10px;background:var(--gray-50);cursor:pointer;font-size:13.5px;transition:.15s;user-select:none}
+.check-item:hover{border-color:var(--blue)}
+.check-item input{width:17px;height:17px;accent-color:var(--blue);cursor:pointer;flex-shrink:0}
+.check-item.sel{border-color:var(--blue);background:var(--blue-soft)}
+
+.tag-box{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 10px;border:1.5px solid var(--gray-200);border-radius:10px;background:var(--gray-50);transition:.15s}
+.tag-box.focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.tag-chip{display:inline-flex;align-items:center;gap:7px;padding:6px 11px;background:var(--blue-soft);color:var(--blue);border-radius:20px;font-size:13px;font-weight:500}
+.tag-chip button{border:none;background:none;color:var(--blue);cursor:pointer;font-size:13px;line-height:1;padding:0;display:grid;place-items:center;opacity:.7}
+.tag-chip button:hover{opacity:1}
+.tag-box input{flex:1;min-width:150px;border:none;outline:none;background:transparent;font-family:inherit;font-size:14px;color:var(--gray-900);padding:6px 2px}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;width:100%;margin-top:26px;
+  padding:14px;border:none;border-radius:12px;background:var(--blue);color:#fff;font-family:inherit;
+  font-size:15px;font-weight:600;cursor:pointer;transition:.15s;box-shadow:0 8px 20px rgba(37,99,235,.28)}
+.btn:hover{background:var(--blue-dark);transform:translateY(-1px)}
+.btn:disabled{opacity:.7;cursor:not-allowed;transform:none}
+
+.spinner{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.success{display:none;text-align:center;padding:44px 24px}
+.success .icon{width:88px;height:88px;margin:0 auto 20px;border-radius:50%;background:#DCFCE7;color:var(--green);display:grid;place-items:center;font-size:40px;animation:pop .4s ease}
+@keyframes pop{0%{transform:scale(.5);opacity:0}100%{transform:scale(1);opacity:1}}
+.success h2{font-size:20px;font-weight:600;margin-bottom:8px}
+.success p{color:var(--gray-500);font-size:14px}
+.success button{margin-top:24px;width:auto;padding:12px 26px;background:var(--gray-100);color:var(--blue);box-shadow:none}
+.success button:hover{background:var(--blue-soft)}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(120px);background:var(--gray-900);
+  color:#fff;padding:14px 20px;border-radius:12px;font-size:13.5px;display:flex;align-items:center;gap:10px;
+  box-shadow:0 12px 28px rgba(0,0,0,.25);opacity:0;transition:.35s;z-index:99;max-width:90vw}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.error{background:#7F1D1D}
+.toast i{font-size:16px}
+
+footer{text-align:center;margin-top:26px;font-size:12px;color:var(--gray-400)}
+@media(max-width:560px){.grid{grid-template-columns:1fr}.hero h1{font-size:19px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <i class="fa-solid fa-user-graduate"></i>
+    <h1>Formulir Biodata Siswa</h1>
+    <p>Isi data berikut dengan lengkap dan benar. Data ini digunakan oleh Guru Wali untuk keperluan administrasi kelas.</p>
+  </div>
+
+  <!-- FORM -->
+  <form id="form" novalidate>
+    <div class="card">
+      <div class="section-title"><i class="fa-solid fa-id-card"></i> Data Pribadi</div>
+      <div class="grid">
+        <div class="field full" data-for="NISN">
+          <label>NISN <span class="req">*</span></label>
+          <input name="NISN" inputmode="numeric" placeholder="Nomor Induk Siswa Nasional">
+          <div class="err-msg"></div>
+        </div>
+        <div class="field full" data-for="Nama Lengkap">
+          <label>Nama Lengkap <span class="req">*</span></label>
+          <input name="Nama Lengkap" placeholder="Nama sesuai akta/ijazah">
+          <div class="err-msg"></div>
+        </div>
+        <div class="field" data-for="Jenis Kelamin">
+          <label>Jenis Kelamin <span class="req">*</span></label>
+          <select name="Jenis Kelamin">
+            <option value="">-- Pilih --</option>
+            <option>Laki-laki</option><option>Perempuan</option>
+          </select>
+          <div class="err-msg"></div>
+        </div>
+        <div class="field" data-for="Agama">
+          <label>Agama <span class="req">*</span></label>
+          <select name="Agama">
+            <option value="">-- Pilih --</option>
+            <option>Islam</option><option>Kristen</option><option>Katolik</option>
+            <option>Hindu</option><option>Buddha</option><option>Konghucu</option>
+          </select>
+          <div class="err-msg"></div>
+        </div>
+        <div class="field" data-for="Tempat Lahir">
+          <label>Tempat Lahir <span class="req">*</span></label>
+          <input name="Tempat Lahir" placeholder="Kota/Kabupaten lahir">
+          <div class="err-msg"></div>
+        </div>
+        <div class="field" data-for="Tanggal Lahir">
+          <label>Tanggal Lahir <span class="req">*</span></label>
+          <input type="date" name="Tanggal Lahir">
+          <div class="err-msg"></div>
+        </div>
+        <div class="field full" data-for="Alamat Lengkap">
+          <label>Alamat Lengkap <span class="req">*</span></label>
+          <textarea name="Alamat Lengkap" placeholder="Nama jalan, nomor rumah, RT/RW"></textarea>
+          <div class="err-msg"></div>
+        </div>
+        <div class="field" data-for="Banjar/Dusun">
+          <label>Banjar / Dusun <span class="req">*</span></label>
+          <input name="Banjar/Dusun">
+          <div class="err-msg"></div>
+        </div>
+        <div class="field" data-for="Desa">
+          <label>Desa <span class="req">*</span></label>
+          <input name="Desa">
+          <div class="err-msg"></div>
+        </div>
+        <div class="field" data-for="Kecamatan">
+          <label>Kecamatan <span class="req">*</span></label>
+          <input name="Kecamatan">
+          <div class="err-msg"></div>
+        </div>
+        <div class="field" data-for="Kabupaten">
+          <label>Kabupaten <span class="req">*</span></label>
+          <input name="Kabupaten">
+          <div class="err-msg"></div>
+        </div>
+        <div class="field" data-for="Nomor HP Siswa">
+          <label>Nomor HP Siswa <span class="req">*</span></label>
+          <input name="Nomor HP Siswa" inputmode="numeric" placeholder="08xxxxxxxxxx">
+          <div class="hint">Hanya angka, tanpa spasi/tanda</div>
+          <div class="err-msg"></div>
+        </div>
+        <div class="field" data-for="Email">
+          <label>Email <span class="req">*</span></label>
+          <input type="email" name="Email" placeholder="nama@email.com">
+          <div class="err-msg"></div>
+        </div>
+        <div class="field" data-for="Kelas">
+          <label>Kelas <span class="req">*</span></label>
+          <input name="Kelas" placeholder="Contoh: X-1, XI IPA 2">
+          <div class="err-msg"></div>
+        </div>
+        <div class="field" data-for="Nomor Absen">
+          <label>Nomor Absen <span class="req">*</span></label>
+          <input name="Nomor Absen" inputmode="numeric" placeholder="Contoh: 12">
+          <div class="err-msg"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><i class="fa-solid fa-trophy"></i> Ekstrakurikuler <span style="font-weight:400;color:var(--gray-400);font-size:12px">(boleh lebih dari satu)</span></div>
+      <div class="tag-box" id="ekstraBox">
+        <input id="ekstraField" type="text" placeholder="Ketik ekstrakurikuler lalu tekan Enter...">
+      </div>
+      <div class="hint">Ketik satu kegiatan lalu tekan <b>Enter</b> atau <b>koma</b> untuk menambah. Bisa lebih dari satu. Boleh dikosongkan.</div>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><i class="fa-solid fa-people-roof"></i> Data Orang Tua</div>
+      <div class="grid">
+        <div class="field" data-for="Nama Ayah">
+          <label>Nama Ayah <span class="req">*</span></label>
+          <input name="Nama Ayah">
+          <div class="err-msg"></div>
+        </div>
+        <div class="field" data-for="Pekerjaan Ayah">
+          <label>Pekerjaan Ayah <span class="req">*</span></label>
+          <input name="Pekerjaan Ayah">
+          <div class="err-msg"></div>
+        </div>
+        <div class="field full" data-for="Nomor HP Ayah">
+          <label>Nomor HP Ayah <span class="req">*</span></label>
+          <input name="Nomor HP Ayah" inputmode="numeric" placeholder="08xxxxxxxxxx">
+          <div class="err-msg"></div>
+        </div>
+        <div class="field" data-for="Nama Ibu">
+          <label>Nama Ibu <span class="req">*</span></label>
+          <input name="Nama Ibu">
+          <div class="err-msg"></div>
+        </div>
+        <div class="field" data-for="Pekerjaan Ibu">
+          <label>Pekerjaan Ibu <span class="req">*</span></label>
+          <input name="Pekerjaan Ibu">
+          <div class="err-msg"></div>
+        </div>
+        <div class="field full" data-for="Nomor HP Ibu">
+          <label>Nomor HP Ibu <span class="req">*</span></label>
+          <input name="Nomor HP Ibu" inputmode="numeric" placeholder="08xxxxxxxxxx">
+          <div class="err-msg"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><i class="fa-solid fa-user-shield"></i> Data Wali <span style="font-weight:400;color:var(--gray-400);font-size:12px">(Opsional)</span></div>
+      <div class="grid">
+        <div class="field" data-for="Nama Wali (Opsional)">
+          <label>Nama Wali</label>
+          <input name="Nama Wali (Opsional)">
+          <div class="err-msg"></div>
+        </div>
+        <div class="field" data-for="Nomor HP Wali">
+          <label>Nomor HP Wali</label>
+          <input name="Nomor HP Wali" inputmode="numeric" placeholder="08xxxxxxxxxx">
+          <div class="err-msg"></div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn" id="submitBtn">
+        <i class="fa-solid fa-floppy-disk"></i> Simpan Data
+      </button>
+    </div>
+  </form>
+
+  <!-- SUCCESS -->
+  <div class="card success" id="success">
+    <div class="icon"><i class="fa-solid fa-check"></i></div>
+    <h2>Terima kasih, data berhasil disimpan.</h2>
+    <p>Biodatamu sudah tercatat oleh Guru Wali.</p>
+    <button type="button" onclick="location.reload()"><i class="fa-solid fa-plus"></i> Isi data siswa lain</button>
+  </div>
+
+  <footer>Aplikasi Data Guru Wali &copy; 2026</footer>
+</div>
+
+<div class="toast" id="toast"><i class="fa-solid fa-circle-info"></i><span id="toastText"></span></div>
+
+<script>
+/* ====== GANTI dengan Web App URL Google Apps Script Anda ====== */
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyn3oCQ-oDG8524xHLZdpNgdBIbuZU_E0I1anqPwHKWDoj-M35X0X6HpkhuOwB8NtQ3/exec";
+
+const form = document.getElementById('form');
+const submitBtn = document.getElementById('submitBtn');
+const REQUIRED = ["NISN","Nama Lengkap","Jenis Kelamin","Tempat Lahir","Tanggal Lahir","Agama",
+  "Alamat Lengkap","Banjar/Dusun","Desa","Kecamatan","Kabupaten","Nomor HP Siswa","Email",
+  "Kelas","Nomor Absen","Nama Ayah","Pekerjaan Ayah","Nomor HP Ayah","Nama Ibu",
+  "Pekerjaan Ibu","Nomor HP Ibu"];
+const HP_FIELDS = ["Nomor HP Siswa","Nomor HP Ayah","Nomor HP Ibu","Nomor HP Wali"];
+
+function setError(name, msg){
+  const wrap = document.querySelector(`.field[data-for="${CSS.escape(name)}"]`);
+  if(!wrap) return;
+  wrap.classList.toggle('error', !!msg);
+  const el = wrap.querySelector('.err-msg');
+  if(el) el.textContent = msg || '';
+}
+
+// Bersihkan error saat mengetik
+form.addEventListener('input', e=>{
+  const name = e.target.name;
+  if(name) setError(name,'');
+});
+
+// Ekstrakurikuler: ketik sendiri, boleh lebih dari satu
+const ekstraList = [];
+const ekstraBox = document.getElementById('ekstraBox');
+const ekstraField = document.getElementById('ekstraField');
+
+function renderEkstra(){
+  ekstraBox.querySelectorAll('.tag-chip').forEach(c=>c.remove());
+  ekstraList.forEach((val, i)=>{
+    const chip = document.createElement('span');
+    chip.className = 'tag-chip';
+    chip.innerHTML = `${val.replace(/[&<>"']/g,'')} <button type="button" aria-label="Hapus"><i class="fa-solid fa-xmark"></i></button>`;
+    chip.querySelector('button').onclick = ()=>{ ekstraList.splice(i,1); renderEkstra(); };
+    ekstraBox.insertBefore(chip, ekstraField);
+  });
+}
+function addEkstra(text){
+  String(text).split(',').map(s=>s.trim()).filter(Boolean).forEach(v=>{
+    if(!ekstraList.some(e=>e.toLowerCase()===v.toLowerCase())) ekstraList.push(v);
+  });
+  ekstraField.value = '';
+  renderEkstra();
+}
+ekstraField.addEventListener('keydown', e=>{
+  if(e.key==='Enter' || e.key===','){ e.preventDefault(); addEkstra(ekstraField.value); }
+  else if(e.key==='Backspace' && !ekstraField.value && ekstraList.length){ ekstraList.pop(); renderEkstra(); }
+});
+ekstraField.addEventListener('blur', ()=>{ if(ekstraField.value.trim()) addEkstra(ekstraField.value); });
+ekstraField.addEventListener('focus', ()=>ekstraBox.classList.add('focus'));
+ekstraField.addEventListener('blur', ()=>ekstraBox.classList.remove('focus'));
+ekstraBox.addEventListener('click', ()=>ekstraField.focus());
+
+function validate(data){
+  let firstBad = null;
+  for(const f of REQUIRED){
+    if(!data[f] || !String(data[f]).trim()){
+      setError(f,'Wajib diisi'); firstBad = firstBad||f;
+    }
+  }
+  for(const f of HP_FIELDS){
+    if(data[f] && !/^[0-9]+$/.test(data[f])){
+      setError(f,'Hanya angka'); firstBad = firstBad||f;
+    }
+  }
+  if(data['Email'] && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data['Email'])){
+    setError('Email','Format email tidak valid'); firstBad = firstBad||'Email';
+  }
+  return firstBad;
+}
+
+function toast(msg, isError){
+  const t = document.getElementById('toast');
+  document.getElementById('toastText').textContent = msg;
+  t.querySelector('i').className = isError ? 'fa-solid fa-circle-exclamation' : 'fa-solid fa-circle-check';
+  t.classList.toggle('error', !!isError);
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3800);
+}
+
+form.addEventListener('submit', async e=>{
+  e.preventDefault();
+  const fd = new FormData(form);
+  const data = {};
+  fd.forEach((v,k)=> data[k] = String(v).trim());
+
+  // Gabungkan ekstrakurikuler yang diketik siswa (bisa lebih dari satu)
+  if(ekstraField.value.trim()) addEkstra(ekstraField.value);
+  data['Ekstrakurikuler'] = ekstraList.join(', ');
+
+  const bad = validate(data);
+  if(bad){
+    toast('Periksa kembali isian yang ditandai merah.', true);
+    document.querySelector(`.field[data-for="${CSS.escape(bad)}"]`)
+      ?.scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<span class="spinner"></span> Menyimpan...';
+
+  try{
+    const res = await fetch(SCRIPT_URL, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({ action:'simpanData', data })
+    });
+    const out = await res.json();
+    if(out.ok){
+      form.style.display='none';
+      document.getElementById('success').style.display='block';
+      window.scrollTo({top:0, behavior:'smooth'});
+    }else{
+      toast(out.message || 'Gagal menyimpan data.', true);
+      if(/NISN/i.test(out.message||'')) setError('NISN', out.message);
+    }
+  }catch(err){
+    toast('Tidak dapat terhubung ke server. Periksa koneksi/URL.', true);
+  }finally{
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan Data';
+  }
+});
+</script>
+</body>
+</html>
