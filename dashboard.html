@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Guru Wali</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --blue:#2563EB; --blue-dark:#1D4ED8; --blue-soft:#EFF4FF;
+  --bg:#F1F5F9; --surface:#FFFFFF; --line:#E2E8F0; --line-soft:#F1F5F9;
+  --text:#0F172A; --muted:#64748B; --muted-2:#94A3B8;
+  --green:#16A34A; --green-soft:#DCFCE7; --amber:#D97706; --amber-soft:#FEF3C7;
+  --red:#DC2626; --red-soft:#FEE2E2; --wa:#25D366;
+  --shadow:0 4px 18px rgba(15,23,42,.06); --shadow-lg:0 20px 50px rgba(15,23,42,.18);
+  --radius:16px; --sidebar:250px;
+}
+[data-theme="dark"]{
+  --blue:#3B82F6; --blue-soft:#1E293B;
+  --bg:#0B1120; --surface:#111827; --line:#1F2937; --line-soft:#1F2937;
+  --text:#E5E7EB; --muted:#94A3B8; --muted-2:#64748B;
+  --green-soft:#052e1a; --amber-soft:#3a2a08; --red-soft:#3a1010;
+  --shadow:0 4px 18px rgba(0,0,0,.4); --shadow-lg:0 20px 50px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Poppins',sans-serif;background:var(--bg);color:var(--text);transition:background .2s,color .2s}
+a{color:inherit;text-decoration:none}
+
+/* ---------- LAYOUT ---------- */
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sidebar);background:var(--surface);
+  border-right:1px solid var(--line);padding:22px 16px;display:flex;flex-direction:column;gap:6px;z-index:40;transition:transform .25s}
+.brand{display:flex;align-items:center;gap:11px;padding:6px 8px 20px}
+.brand .logo{width:40px;height:40px;border-radius:12px;background:var(--blue);color:#fff;display:grid;place-items:center;font-size:17px}
+.brand b{font-size:15px;font-weight:600;line-height:1.1}
+.brand span{font-size:11px;color:var(--muted)}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:11px;color:var(--muted);
+  font-size:14px;font-weight:500;cursor:pointer;transition:.15s}
+.nav-item i{width:18px;text-align:center}
+.nav-item:hover{background:var(--line-soft);color:var(--text)}
+.nav-item.active{background:var(--blue);color:#fff;box-shadow:0 6px 16px rgba(37,99,235,.3)}
+.sidebar-foot{margin-top:auto;padding-top:14px;border-top:1px solid var(--line)}
+
+.main{margin-left:var(--sidebar);padding:22px 26px 60px;transition:margin .25s}
+.topbar{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+.menu-btn{display:none;width:42px;height:42px;border:1px solid var(--line);background:var(--surface);border-radius:11px;color:var(--text);cursor:pointer}
+.topbar h1{font-size:20px;font-weight:600;flex:1}
+.topbar .sub{font-size:12.5px;color:var(--muted);font-weight:400;display:block;margin-top:2px}
+.icon-btn{width:42px;height:42px;border:1px solid var(--line);background:var(--surface);border-radius:11px;color:var(--text);
+  cursor:pointer;font-size:15px;transition:.15s}
+.icon-btn:hover{background:var(--line-soft);color:var(--blue)}
+
+.page{display:none;animation:fade .3s}
+.page.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ---------- STAT CARDS ---------- */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.stat .ic{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;font-size:19px;margin-bottom:14px}
+.stat .val{font-size:30px;font-weight:700;line-height:1}
+.stat .lbl{font-size:12.5px;color:var(--muted);margin-top:6px}
+.ic.b{background:var(--blue-soft);color:var(--blue)}
+.ic.g{background:var(--green-soft);color:var(--green)}
+.ic.a{background:var(--amber-soft);color:var(--amber)}
+.ic.r{background:var(--red-soft);color:var(--red)}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.panel-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:18px 20px;border-bottom:1px solid var(--line)}
+.panel-head h3{font-size:15px;font-weight:600;flex:1;min-width:140px}
+
+/* ---------- TOOLBAR ---------- */
+.tools{display:flex;gap:10px;flex-wrap:wrap;padding:16px 20px;border-bottom:1px solid var(--line);align-items:center}
+.search{position:relative;flex:1;min-width:200px}
+.search i{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted-2);font-size:13px}
+.search input{width:100%;padding:10px 12px 10px 36px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--text);font-family:inherit;font-size:13.5px}
+.search input:focus{outline:none;border-color:var(--blue);background:var(--surface)}
+select.filter{padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--text);font-family:inherit;font-size:13.5px;cursor:pointer}
+select.filter:focus{outline:none;border-color:var(--blue)}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 15px;border:1.5px solid var(--line);border-radius:10px;
+  background:var(--surface);color:var(--text);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:.15s;white-space:nowrap}
+.btn:hover{border-color:var(--blue);color:var(--blue)}
+.btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn.primary:hover{background:var(--blue-dark)}
+.btn.green{background:var(--green);color:#fff;border-color:var(--green)}
+.btn.green:hover{filter:brightness(.94)}
+
+/* ---------- TABLE ---------- */
+.twrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:1000px}
+th{text-align:left;padding:13px 14px;background:var(--bg);color:var(--muted);font-weight:600;font-size:11.5px;
+  text-transform:uppercase;letter-spacing:.03em;white-space:nowrap;border-bottom:1px solid var(--line);cursor:pointer;user-select:none}
+th.sortable:hover{color:var(--blue)}
+th .arr{opacity:.4;margin-left:4px;font-size:10px}
+th.asc .arr,th.desc .arr{opacity:1;color:var(--blue)}
+td{padding:13px 14px;border-bottom:1px solid var(--line-soft);vertical-align:middle;white-space:nowrap}
+tbody tr:hover{background:var(--line-soft)}
+.name-link{color:var(--blue);font-weight:600;cursor:pointer}
+.name-link:hover{text-decoration:underline}
+.muted{color:var(--muted-2)}
+
+.badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11.5px;font-weight:500}
+.badge.g{background:var(--green-soft);color:var(--green)}
+.badge.a{background:var(--amber-soft);color:var(--amber)}
+.badge.r{background:var(--red-soft);color:var(--red)}
+
+.act{display:flex;gap:6px}
+.act button{width:32px;height:32px;border:1px solid var(--line);border-radius:9px;background:var(--surface);cursor:pointer;font-size:12.5px;transition:.15s;color:var(--muted)}
+.act button:hover{color:#fff}
+.act .wa:hover{background:var(--wa);border-color:var(--wa)}
+.act .note:hover{background:var(--amber);border-color:var(--amber)}
+.act .edit:hover{background:var(--blue);border-color:var(--blue)}
+.act .del:hover{background:var(--red);border-color:var(--red)}
+td .note-preview{max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:12px}
+
+/* ---------- PAGINATION ---------- */
+.pager{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:15px 20px}
+.pager .info{font-size:12.5px;color:var(--muted)}
+.pager .pages{display:flex;gap:6px}
+.pager .pages button{min-width:34px;height:34px;padding:0 8px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--text);cursor:pointer;font-size:13px}
+.pager .pages button:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}
+.pager .pages button.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.pager .pages button:disabled{opacity:.4;cursor:not-allowed}
+
+.empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty i{font-size:40px;opacity:.4;margin-bottom:14px}
+
+/* ---------- LOADING ---------- */
+.loader{position:fixed;inset:0;background:rgba(241,245,249,.7);backdrop-filter:blur(2px);display:none;place-items:center;z-index:80}
+[data-theme="dark"] .loader{background:rgba(11,17,32,.7)}
+.loader.show{display:grid}
+.spinner{width:44px;height:44px;border:4px solid var(--line);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---------- MODAL ---------- */
+.overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);display:none;place-items:center;z-index:90;padding:18px}
+.overlay.show{display:grid;animation:fade .2s}
+.modal{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:560px;max-height:90vh;overflow:auto;animation:slide .25s}
+.modal.sm{max-width:440px}
+@keyframes slide{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
+.modal-head{display:flex;align-items:center;gap:12px;padding:20px 22px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface);z-index:2}
+.modal-head .mh-ic{width:40px;height:40px;border-radius:11px;background:var(--blue-soft);color:var(--blue);display:grid;place-items:center;font-size:16px}
+.modal-head h3{flex:1;font-size:16px;font-weight:600}
+.modal-head h3 small{display:block;font-size:12px;color:var(--muted);font-weight:400;margin-top:2px}
+.close{width:34px;height:34px;border:none;background:var(--line-soft);border-radius:9px;color:var(--muted);cursor:pointer;font-size:14px}
+.close:hover{background:var(--red-soft);color:var(--red)}
+.modal-body{padding:22px}
+
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 20px}
+.detail-grid .full{grid-column:1/-1}
+.dl{font-size:11px;color:var(--muted-2);text-transform:uppercase;letter-spacing:.03em;margin-bottom:3px}
+.dv{font-size:14px;font-weight:500;word-break:break-word}
+.dgroup{grid-column:1/-1;font-size:12.5px;font-weight:600;color:var(--blue);margin-top:8px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+
+.f-label{display:block;font-size:12.5px;font-weight:500;margin-bottom:6px}
+.f-label .req{color:var(--red)}
+.f-input,.f-area,.f-select{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--text);font-family:inherit;font-size:14px}
+.f-input:focus,.f-area:focus,.f-select:focus{outline:none;border-color:var(--blue);background:var(--surface)}
+.f-area{min-height:120px;resize:vertical}
+.modal-foot{display:flex;gap:10px;justify-content:flex-end;padding:16px 22px;border-top:1px solid var(--line);position:sticky;bottom:0;background:var(--surface)}
+
+.wa-preview{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px;font-size:13px;line-height:1.6;white-space:pre-wrap;color:var(--text);margin-top:6px}
+.status-opts{display:grid;gap:10px;margin-top:16px}
+.status-opts label{display:flex;align-items:center;gap:11px;padding:12px 14px;border:1.5px solid var(--line);border-radius:11px;cursor:pointer;font-size:13.5px;transition:.15s}
+.status-opts label:hover{border-color:var(--blue)}
+.status-opts input{accent-color:var(--blue);width:17px;height:17px}
+.status-opts label.sel{border-color:var(--blue);background:var(--blue-soft)}
+
+/* Edit form grid */
+.edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.edit-grid .full{grid-column:1/-1}
+
+/* ---------- TOAST ---------- */
+.toast{position:fixed;right:24px;bottom:24px;background:var(--text);color:var(--surface);padding:14px 18px;border-radius:12px;
+  font-size:13.5px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow-lg);transform:translateY(120px);opacity:0;transition:.35s;z-index:120;max-width:90vw}
+.toast.show{transform:none;opacity:1}
+.toast.ok i{color:var(--green)} .toast.err i{color:#F87171}
+
+.overlay-menu{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:39}
+.overlay-menu.show{display:block}
+
+/* ---------- SETTINGS ---------- */
+.settings-field{margin-bottom:18px}
+.settings-field p{font-size:12px;color:var(--muted);margin:5px 0 8px}
+
+@media(max-width:1000px){.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:820px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:none;box-shadow:var(--shadow-lg)}
+  .main{margin-left:0}
+  .menu-btn{display:grid;place-items:center}
+}
+@media(max-width:560px){
+  .stats{grid-template-columns:1fr}
+  .detail-grid,.edit-grid{grid-template-columns:1fr}
+  .main{padding:18px 14px 50px}
+}
+
+/* ---------- LOGIN ---------- */
+.login-overlay{position:fixed;inset:0;z-index:200;display:none;place-items:center;padding:20px;
+  background:linear-gradient(135deg,var(--blue),#1e3a8a)}
+[data-theme="dark"] .login-overlay{background:linear-gradient(135deg,#0b1120,#1e293b)}
+.login-overlay.show{display:grid}
+.login-card{background:var(--surface);border-radius:20px;box-shadow:var(--shadow-lg);padding:38px 34px;width:100%;max-width:400px;text-align:center;animation:slide .3s}
+.login-ic{width:64px;height:64px;margin:0 auto 18px;border-radius:18px;background:var(--blue-soft);color:var(--blue);display:grid;place-items:center;font-size:26px}
+.login-card h2{font-size:20px;font-weight:600;margin-bottom:6px}
+.login-card p{font-size:13.5px;color:var(--muted);margin-bottom:22px}
+.login-field{position:relative;margin-bottom:12px}
+.login-field input{width:100%;padding:13px 46px 13px 15px;border:1.5px solid var(--line);border-radius:11px;background:var(--bg);color:var(--text);font-family:inherit;font-size:15px}
+.login-field input:focus{outline:none;border-color:var(--blue);background:var(--surface)}
+.login-field button{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:34px;height:34px;border:none;background:none;color:var(--muted);cursor:pointer;font-size:14px}
+.login-error{display:none;font-size:12.5px;color:var(--red);margin-bottom:12px}
+.login-btn{width:100%;justify-content:center;padding:13px}
+.login-card.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+
+/* ---------- PRINT ---------- */
+@media print{
+  .sidebar,.topbar,.tools,.pager,.act,.panel-head .btn,.menu-btn{display:none!important}
+  .main{margin:0;padding:0}
+  .panel{border:none;box-shadow:none}
+  th:last-child,td:last-child{display:none}
+  table{min-width:0;font-size:11px}
+  body{background:#fff}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card" id="loginCard">
+    <div class="login-ic"><i class="fa-solid fa-lock"></i></div>
+    <h2>Dashboard Guru Wali</h2>
+    <p>Masukkan kata sandi untuk mengakses dashboard.</p>
+    <div class="login-field">
+      <input type="password" id="loginPass" placeholder="Kata sandi" autocomplete="current-password">
+      <button type="button" id="loginToggle" title="Tampilkan/sembunyikan" onclick="toggleLoginPass()"><i class="fa-solid fa-eye"></i></button>
+    </div>
+    <div class="login-error" id="loginError">Kata sandi salah. Coba lagi.</div>
+    <button class="btn primary login-btn" onclick="doLogin()"><i class="fa-solid fa-right-to-bracket"></i> Masuk</button>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logo"><i class="fa-solid fa-chalkboard-user"></i></div>
+    <div><b>Guru Wali</b><span>Data Siswa</span></div>
+  </div>
+  <div class="nav-item active" data-page="dashboard"><i class="fa-solid fa-gauge-high"></i> Dashboard</div>
+  <div class="nav-item" data-page="siswa"><i class="fa-solid fa-users"></i> Data Siswa</div>
+  <div class="nav-item" data-page="pengaturan"><i class="fa-solid fa-gear"></i> Pengaturan</div>
+  <div class="sidebar-foot">
+    <div class="nav-item" onclick="copyFormLink()"><i class="fa-solid fa-share-nodes"></i> Bagikan Link Formulir</div>
+    <div class="nav-item" onclick="doLogout()"><i class="fa-solid fa-right-from-bracket"></i> Keluar</div>
+  </div>
+</aside>
+<div class="overlay-menu" id="overlayMenu" onclick="toggleMenu()"></div>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <button class="menu-btn" onclick="toggleMenu()"><i class="fa-solid fa-bars"></i></button>
+    <div style="flex:1">
+      <h1 id="pageTitle">Dashboard</h1>
+      <span class="sub" id="pageSub">Ringkasan pengisian data siswa</span>
+    </div>
+    <button class="icon-btn" onclick="loadAll()" title="Muat ulang"><i class="fa-solid fa-rotate"></i></button>
+    <button class="icon-btn" id="themeBtn" onclick="toggleTheme()" title="Mode gelap"><i class="fa-solid fa-moon"></i></button>
+  </div>
+
+  <!-- PAGE: DASHBOARD -->
+  <section class="page active" id="page-dashboard">
+    <div class="stats">
+      <div class="stat"><div class="ic b"><i class="fa-solid fa-users"></i></div><div class="val" id="stTotal">0</div><div class="lbl">Jumlah Seluruh Siswa</div></div>
+      <div class="stat"><div class="ic b"><i class="fa-solid fa-inbox"></i></div><div class="val" id="stMasuk">0</div><div class="lbl">Data Sudah Masuk</div></div>
+      <div class="stat"><div class="ic g"><i class="fa-brands fa-whatsapp"></i></div><div class="val" id="stSudah">0</div><div class="lbl">Orang Tua Sudah Gabung Grup</div></div>
+      <div class="stat"><div class="ic r"><i class="fa-solid fa-user-clock"></i></div><div class="val" id="stBelum">0</div><div class="lbl">Orang Tua Belum Gabung Grup</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h3><i class="fa-solid fa-clock-rotate-left" style="color:var(--blue);margin-right:8px"></i>Data Terbaru Masuk</h3>
+        <button class="btn" data-page="siswa" onclick="goPage('siswa')">Lihat Semua <i class="fa-solid fa-arrow-right"></i></button>
+      </div>
+      <div class="twrap">
+        <table>
+          <thead><tr><th>Nama</th><th>Kelas</th><th>No. Absen</th><th>Status Grup WA</th><th>Waktu Isi</th></tr></thead>
+          <tbody id="recentBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE: DATA SISWA -->
+  <section class="page" id="page-siswa">
+    <div class="panel">
+      <div class="tools">
+        <div class="search"><i class="fa-solid fa-magnifying-glass"></i>
+          <input id="searchInput" placeholder="Cari berdasarkan nama siswa...">
+        </div>
+        <select class="filter" id="classFilter"><option value="">Semua Kelas</option></select>
+        <button class="btn green" onclick="exportExcel()"><i class="fa-solid fa-file-excel"></i> Export Excel</button>
+        <button class="btn" onclick="window.print()"><i class="fa-solid fa-print"></i> Print</button>
+      </div>
+      <div class="twrap">
+        <table>
+          <thead><tr id="theadRow">
+            <th class="sortable" data-key="Nama Lengkap">Nama Lengkap <i class="fa-solid fa-sort arr"></i></th>
+            <th class="sortable" data-key="Kelas">Kelas <i class="fa-solid fa-sort arr"></i></th>
+            <th class="sortable" data-key="Nomor Absen">No. Absen <i class="fa-solid fa-sort arr"></i></th>
+            <th class="sortable" data-key="Ekstrakurikuler">Ekstrakurikuler <i class="fa-solid fa-sort arr"></i></th>
+            <th>HP Siswa</th>
+            <th class="sortable" data-key="Nama Ayah">Nama Ayah <i class="fa-solid fa-sort arr"></i></th>
+            <th>HP Ayah</th>
+            <th class="sortable" data-key="Nama Ibu">Nama Ibu <i class="fa-solid fa-sort arr"></i></th>
+            <th>HP Ibu</th>
+            <th class="sortable" data-key="Status Bergabung Grup WA Orang Tua">Status Grup WA <i class="fa-solid fa-sort arr"></i></th>
+            <th>Catatan</th>
+            <th>Aksi</th>
+          </tr></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+      <div class="pager">
+        <div class="info" id="pageInfo"></div>
+        <div class="pages" id="pageBtns"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE: PENGATURAN -->
+  <section class="page" id="page-pengaturan">
+    <div class="panel" style="max-width:640px">
+      <div class="panel-head"><h3><i class="fa-solid fa-gear" style="color:var(--blue);margin-right:8px"></i>Pengaturan WhatsApp</h3></div>
+      <div class="modal-body">
+        <div class="settings-field">
+          <label class="f-label">Link Grup WhatsApp Orang Tua</label>
+          <p>Tautan undangan grup yang akan dikirim ke orang tua.</p>
+          <input class="f-input" id="setLink" placeholder="https://chat.whatsapp.com/xxxxxxxx">
+        </div>
+        <div class="settings-field">
+          <label class="f-label">Template Pesan Undangan</label>
+          <p>Gunakan <b>[KELAS]</b> dan <b>[LINK]</b> sebagai variabel otomatis.</p>
+          <textarea class="f-area" id="setMsg"></textarea>
+        </div>
+        <button class="btn primary" onclick="saveSettings()"><i class="fa-solid fa-floppy-disk"></i> Simpan Pengaturan</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- LOADER -->
+<div class="loader" id="loader"><div class="spinner"></div></div>
+
+<!-- DETAIL MODAL -->
+<div class="overlay" id="detailModal">
+  <div class="modal">
+    <div class="modal-head"><div class="mh-ic"><i class="fa-solid fa-address-card"></i></div>
+      <h3 id="detailName">Detail Siswa<small id="detailSub"></small></h3>
+      <button class="close" onclick="closeModal('detailModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body"><div class="detail-grid" id="detailBody"></div></div>
+  </div>
+</div>
+
+<!-- WA MODAL -->
+<div class="overlay" id="waModal">
+  <div class="modal sm">
+    <div class="modal-head"><div class="mh-ic" style="background:#dcfce7;color:var(--wa)"><i class="fa-brands fa-whatsapp"></i></div>
+      <h3>Undang Grup WhatsApp<small id="waSub"></small></h3>
+      <button class="close" onclick="closeModal('waModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <label class="f-label">Pesan yang akan dikirim</label>
+      <div class="wa-preview" id="waPreview"></div>
+      <button class="btn green" style="width:100%;margin-top:14px;justify-content:center" id="waSendBtn"><i class="fa-brands fa-whatsapp"></i> Buka WhatsApp</button>
+
+      <label class="f-label" style="margin-top:22px">Perbarui status keanggotaan grup</label>
+      <div class="status-opts" id="waStatusOpts">
+        <label><input type="radio" name="wastatus" value="Sudah Bergabung"> ✅ Sudah Bergabung</label>
+        <label><input type="radio" name="wastatus" value="Sudah Diundang"> ⏳ Sudah Diundang</label>
+        <label><input type="radio" name="wastatus" value="Belum Diundang"> ❌ Belum Diundang</label>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('waModal')">Tutup</button>
+      <button class="btn primary" onclick="saveWaStatus()"><i class="fa-solid fa-check"></i> Simpan Status</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTE MODAL -->
+<div class="overlay" id="noteModal">
+  <div class="modal sm">
+    <div class="modal-head"><div class="mh-ic" style="background:var(--amber-soft);color:var(--amber)"><i class="fa-solid fa-note-sticky"></i></div>
+      <h3>Catatan Guru<small id="noteSub"></small></h3>
+      <button class="close" onclick="closeModal('noteModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <textarea class="f-area" id="noteText" placeholder="Contoh: Orang tua belum merespons. / Sudah bergabung grup. / Perlu pendampingan. / Nomor HP perlu diperbarui."></textarea>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('noteModal')">Batal</button>
+      <button class="btn primary" onclick="saveNote()"><i class="fa-solid fa-floppy-disk"></i> Simpan Catatan</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-head"><div class="mh-ic"><i class="fa-solid fa-pen-to-square"></i></div>
+      <h3>Edit Data Siswa<small id="editSub"></small></h3>
+      <button class="close" onclick="closeModal('editModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body"><div class="edit-grid" id="editBody"></div></div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('editModal')">Batal</button>
+      <button class="btn primary" onclick="saveEdit()"><i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><i class="fa-solid fa-circle-check"></i><span id="toastText"></span></div>
+
+<script>
+/* ================= GANTI dengan Web App URL Anda ================= */
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbzpFpMka0IFfjVmhxFVh2P2bAzcsiLWkuRxuXkW99pdKKe-BaVrcCbEGvQ2TNg7ma/exec";
+/* URL halaman formulir siswa (untuk tombol "Bagikan Link Formulir") */
+const FORM_URL   = "https://baliscript539.github.io/dataXI5/";
+/* ====== Kata sandi untuk membuka dashboard (ganti sesuai keinginan) ====== */
+const DASHBOARD_PASSWORD = "guruwali2026";
+
+/* ---- Kolom & label ---- */
+const COLS = ["Timestamp","NISN","Nama Lengkap","Jenis Kelamin","Tempat Lahir","Tanggal Lahir","Agama",
+  "Alamat Lengkap","Banjar/Dusun","Desa","Kecamatan","Kabupaten","Nomor HP Siswa","Email","Kelas",
+  "Nomor Absen","Ekstrakurikuler","Nama Ayah","Pekerjaan Ayah","Nomor HP Ayah","Nama Ibu","Pekerjaan Ibu","Nomor HP Ibu",
+  "Nama Wali (Opsional)","Nomor HP Wali","Status Bergabung Grup WA Orang Tua","Catatan Guru"];
+const EDITABLE = COLS.filter(c=>c!=="Timestamp"&&c!=="Status Bergabung Grup WA Orang Tua"&&c!=="Catatan Guru");
+
+/* ---- State ---- */
+let ALL = [];
+let filtered = [];
+let sortKey = null, sortDir = 1;
+let page = 1, perPage = 10;
+let currentNisn = null;
+
+const DEFAULT_MSG = "Halo Bapak/Ibu.\n\nPerkenalkan saya Guru Wali kelas [KELAS].\n\nMohon bergabung pada Grup WhatsApp Orang Tua melalui tautan berikut:\n\n[LINK]\n\nTerima kasih.";
+
+/* ---- Settings (localStorage) ---- */
+function getSettings(){
+  return {
+    link: localStorage.getItem('wa_link') || "https://chat.whatsapp.com/xxxxxxxx",
+    msg:  localStorage.getItem('wa_msg')  || DEFAULT_MSG
+  };
+}
+function saveSettings(){
+  localStorage.setItem('wa_link', document.getElementById('setLink').value.trim());
+  localStorage.setItem('wa_msg',  document.getElementById('setMsg').value);
+  toast('Pengaturan tersimpan.');
+}
+function initSettingsUI(){
+  const s = getSettings();
+  document.getElementById('setLink').value = s.link;
+  document.getElementById('setMsg').value = s.msg;
+}
+
+/* ---- Theme ---- */
+function toggleTheme(){
+  const dark = document.documentElement.getAttribute('data-theme')==='dark';
+  document.documentElement.setAttribute('data-theme', dark?'':'dark');
+  localStorage.setItem('theme', dark?'light':'dark');
+  document.querySelector('#themeBtn i').className = dark?'fa-solid fa-moon':'fa-solid fa-sun';
+}
+(function(){ if(localStorage.getItem('theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');
+  document.querySelector('#themeBtn i').className='fa-solid fa-sun';} })();
+
+/* ---- Nav ---- */
+document.querySelectorAll('.nav-item[data-page]').forEach(n=>n.addEventListener('click',()=>goPage(n.dataset.page)));
+const TITLES = {dashboard:['Dashboard','Ringkasan pengisian data siswa'],
+  siswa:['Data Siswa','Kelola biodata & komunikasi orang tua'],
+  pengaturan:['Pengaturan','Atur pesan & tautan grup WhatsApp']};
+function goPage(p){
+  document.querySelectorAll('.nav-item[data-page]').forEach(n=>n.classList.toggle('active',n.dataset.page===p));
+  document.querySelectorAll('.page').forEach(s=>s.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  document.getElementById('pageTitle').textContent = TITLES[p][0];
+  document.getElementById('pageSub').textContent = TITLES[p][1];
+  if(window.innerWidth<=820) toggleMenu(true);
+}
+function toggleMenu(forceClose){
+  const sb = document.getElementById('sidebar'), ov = document.getElementById('overlayMenu');
+  const open = forceClose ? false : !sb.classList.contains('open');
+  sb.classList.toggle('open', open); ov.classList.toggle('show', open);
+}
+
+/* ---- Toast & Loader ---- */
+function toast(msg, err){
+  const t=document.getElementById('toast');
+  document.getElementById('toastText').textContent=msg;
+  t.className='toast '+(err?'err':'ok');
+  t.querySelector('i').className = err?'fa-solid fa-circle-exclamation':'fa-solid fa-circle-check';
+  t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3500);
+}
+function loading(on){ document.getElementById('loader').classList.toggle('show',on); }
+
+/* ---- API ---- */
+async function apiGet(action){
+  const res = await fetch(SCRIPT_URL + '?action=' + action);
+  return res.json();
+}
+async function apiPost(payload){
+  const res = await fetch(SCRIPT_URL, {method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(payload)});
+  return res.json();
+}
+
+/* ---- Load ---- */
+async function loadAll(){
+  loading(true);
+  try{
+    const out = await apiGet('getData');
+    if(!out.ok) throw new Error(out.message);
+    ALL = out.data || [];
+    renderStats();
+    renderRecent();
+    buildClassFilter();
+    applyFilters();
+  }catch(err){
+    toast('Gagal memuat data. Periksa URL / koneksi.', true);
+  }finally{ loading(false); }
+}
+
+function renderStats(){
+  const total = ALL.length;
+  const sudah = ALL.filter(d=>String(d['Status Bergabung Grup WA Orang Tua']).trim()==='Sudah Bergabung').length;
+  document.getElementById('stTotal').textContent = total;
+  document.getElementById('stMasuk').textContent = total;
+  document.getElementById('stSudah').textContent = sudah;
+  document.getElementById('stBelum').textContent = total - sudah;
+}
+
+function renderRecent(){
+  const body = document.getElementById('recentBody');
+  const rows = [...ALL].sort((a,b)=>String(b.Timestamp).localeCompare(String(a.Timestamp))).slice(0,5);
+  if(!rows.length){ body.innerHTML = `<tr><td colspan="5" class="empty"><i class="fa-solid fa-inbox"></i><br>Belum ada data masuk.</td></tr>`; return; }
+  body.innerHTML = rows.map(d=>`<tr>
+    <td><span class="name-link" onclick="showDetail('${esc(d.NISN)}')">${esc(d['Nama Lengkap'])}</span></td>
+    <td>${esc(d.Kelas)}</td><td>${esc(d['Nomor Absen'])}</td>
+    <td>${statusBadge(d['Status Bergabung Grup WA Orang Tua'])}</td>
+    <td class="muted">${esc(d.Timestamp)}</td></tr>`).join('');
+}
+
+function buildClassFilter(){
+  const sel = document.getElementById('classFilter');
+  const kelas = [...new Set(ALL.map(d=>String(d.Kelas).trim()).filter(Boolean))].sort();
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">Semua Kelas</option>' + kelas.map(k=>`<option>${esc(k)}</option>`).join('');
+  sel.value = cur;
+}
+
+/* ---- Filter / Sort / Paginate ---- */
+document.getElementById('searchInput').addEventListener('input', ()=>{page=1;applyFilters();});
+document.getElementById('classFilter').addEventListener('change', ()=>{page=1;applyFilters();});
+document.querySelectorAll('th.sortable').forEach(th=>th.addEventListener('click',()=>{
+  const k = th.dataset.key;
+  if(sortKey===k) sortDir*=-1; else {sortKey=k;sortDir=1;}
+  document.querySelectorAll('th.sortable').forEach(t=>{t.classList.remove('asc','desc');t.querySelector('.arr').className='fa-solid fa-sort arr';});
+  th.classList.add(sortDir===1?'asc':'desc');
+  th.querySelector('.arr').className = 'fa-solid '+(sortDir===1?'fa-sort-up':'fa-sort-down')+' arr';
+  applyFilters();
+}));
+
+function applyFilters(){
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  const kelas = document.getElementById('classFilter').value;
+  filtered = ALL.filter(d=>{
+    const okName = !q || String(d['Nama Lengkap']).toLowerCase().includes(q);
+    const okClass = !kelas || String(d.Kelas).trim()===kelas;
+    return okName && okClass;
+  });
+  if(sortKey){
+    filtered.sort((a,b)=>{
+      let x=a[sortKey]??'', y=b[sortKey]??'';
+      const nx=parseFloat(x), ny=parseFloat(y);
+      if(!isNaN(nx)&&!isNaN(ny)) return (nx-ny)*sortDir;
+      return String(x).localeCompare(String(y),'id')*sortDir;
+    });
+  }
+  renderTable();
+}
+
+function renderTable(){
+  const body = document.getElementById('tableBody');
+  const totalPages = Math.max(1, Math.ceil(filtered.length/perPage));
+  if(page>totalPages) page=totalPages;
+  const start=(page-1)*perPage;
+  const rows = filtered.slice(start, start+perPage);
+
+  if(!rows.length){
+    body.innerHTML = `<tr><td colspan="12" class="empty"><i class="fa-solid fa-user-slash"></i><br>Tidak ada data yang cocok.</td></tr>`;
+  }else{
+    body.innerHTML = rows.map(d=>{
+      const note = String(d['Catatan Guru']||'').trim();
+      return `<tr>
+        <td><span class="name-link" onclick="showDetail('${esc(d.NISN)}')">${esc(d['Nama Lengkap'])}</span></td>
+        <td>${esc(d.Kelas)}</td>
+        <td>${esc(d['Nomor Absen'])}</td>
+        <td>${(()=>{const x=String(d['Ekstrakurikuler']||'').trim();return x?`<span class="note-preview" title="${esc(x)}">${esc(x)}</span>`:'<span class="muted">—</span>';})()}</td>
+        <td class="muted">${esc(d['Nomor HP Siswa'])||'-'}</td>
+        <td>${esc(d['Nama Ayah'])||'-'}</td>
+        <td class="muted">${esc(d['Nomor HP Ayah'])||'-'}</td>
+        <td>${esc(d['Nama Ibu'])||'-'}</td>
+        <td class="muted">${esc(d['Nomor HP Ibu'])||'-'}</td>
+        <td>${statusBadge(d['Status Bergabung Grup WA Orang Tua'])}</td>
+        <td>${note?`<span class="note-preview" title="${esc(note)}">${esc(note)}</span>`:'<span class="muted">—</span>'}</td>
+        <td><div class="act">
+          <button class="wa" title="Undang Grup WA" onclick="openWa('${esc(d.NISN)}')"><i class="fa-brands fa-whatsapp"></i></button>
+          <button class="note" title="Catatan" onclick="openNote('${esc(d.NISN)}')"><i class="fa-solid fa-note-sticky"></i></button>
+          <button class="edit" title="Edit" onclick="openEdit('${esc(d.NISN)}')"><i class="fa-solid fa-pen"></i></button>
+          <button class="del" title="Hapus" onclick="delData('${esc(d.NISN)}')"><i class="fa-solid fa-trash"></i></button>
+        </div></td>
+      </tr>`;
+    }).join('');
+  }
+  renderPager(totalPages);
+}
+
+function renderPager(totalPages){
+  const info = document.getElementById('pageInfo');
+  const total = filtered.length;
+  const start = total? (page-1)*perPage+1 : 0;
+  const end = Math.min(page*perPage, total);
+  info.textContent = `Menampilkan ${start}–${end} dari ${total} data`;
+
+  const btns=document.getElementById('pageBtns'); btns.innerHTML='';
+  const mk=(label,pg,dis,act)=>{const b=document.createElement('button');b.innerHTML=label;b.disabled=dis;
+    if(act)b.classList.add('active'); b.onclick=()=>{page=pg;renderTable();}; return b;};
+  btns.appendChild(mk('<i class="fa-solid fa-angle-left"></i>', page-1, page<=1, false));
+  const win=[]; for(let i=1;i<=totalPages;i++){ if(i===1||i===totalPages||Math.abs(i-page)<=1) win.push(i); else if(win[win.length-1]!=='…') win.push('…'); }
+  win.forEach(i=>{ if(i==='…'){const s=document.createElement('button');s.textContent='…';s.disabled=true;btns.appendChild(s);}
+    else btns.appendChild(mk(i,i,false,i===page)); });
+  btns.appendChild(mk('<i class="fa-solid fa-angle-right"></i>', page+1, page>=totalPages, false));
+}
+
+/* ---- Helpers ---- */
+function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function statusBadge(s){
+  s=String(s||'Belum Diundang').trim();
+  if(s==='Sudah Bergabung') return `<span class="badge g">✅ Sudah Bergabung</span>`;
+  if(s==='Sudah Diundang')  return `<span class="badge a">⏳ Sudah Diundang</span>`;
+  return `<span class="badge r">❌ Belum Diundang</span>`;
+}
+function findByNisn(nisn){ return ALL.find(d=>String(d.NISN)===String(nisn)); }
+function waNumber(raw){
+  let n=String(raw||'').replace(/\D/g,'');
+  if(!n) return '';
+  if(n.startsWith('0')) n='62'+n.slice(1);
+  else if(n.startsWith('62')) {/*ok*/}
+  else if(n.startsWith('8')) n='62'+n;
+  return n;
+}
+
+/* ---- Detail ---- */
+function showDetail(nisn){
+  const d=findByNisn(nisn); if(!d) return;
+  document.getElementById('detailName').firstChild.textContent = d['Nama Lengkap']+' ';
+  document.getElementById('detailSub').textContent = `NISN ${d.NISN} • Kelas ${d.Kelas}`;
+  const groups=[
+    ['Data Pribadi',['NISN','Nama Lengkap','Jenis Kelamin','Tempat Lahir','Tanggal Lahir','Agama','Nomor HP Siswa','Email','Kelas','Nomor Absen','Ekstrakurikuler']],
+    ['Alamat',['Alamat Lengkap','Banjar/Dusun','Desa','Kecamatan','Kabupaten']],
+    ['Data Orang Tua',['Nama Ayah','Pekerjaan Ayah','Nomor HP Ayah','Nama Ibu','Pekerjaan Ibu','Nomor HP Ibu']],
+    ['Data Wali',['Nama Wali (Opsional)','Nomor HP Wali']],
+    ['Status & Catatan',['Status Bergabung Grup WA Orang Tua','Catatan Guru','Timestamp']]
+  ];
+  let html='';
+  groups.forEach(([g,keys])=>{
+    html+=`<div class="dgroup">${g}</div>`;
+    keys.forEach(k=>{
+      const full=['Alamat Lengkap','Catatan Guru','Email','Ekstrakurikuler'].includes(k)?'full':'';
+      let val = esc(d[k])||'<span class="muted">—</span>';
+      if(k==='Status Bergabung Grup WA Orang Tua') val=statusBadge(d[k]);
+      html+=`<div class="${full}"><div class="dl">${k.replace(' (Opsional)','')}</div><div class="dv">${val}</div></div>`;
+    });
+  });
+  document.getElementById('detailBody').innerHTML=html;
+  openModal('detailModal');
+}
+
+/* ---- WhatsApp ---- */
+function openWa(nisn){
+  const d=findByNisn(nisn); if(!d) return;
+  currentNisn=nisn;
+  const s=getSettings();
+  const msg=s.msg.replace(/\[KELAS\]/g, d.Kelas||'').replace(/\[LINK\]/g, s.link||'');
+  document.getElementById('waSub').textContent = d['Nama Lengkap'];
+  document.getElementById('waPreview').textContent = msg;
+
+  let num = waNumber(d['Nomor HP Ayah']);
+  let who = 'Ayah';
+  if(!num){ num=waNumber(d['Nomor HP Wali']); who='Wali'; }
+  const btn=document.getElementById('waSendBtn');
+  if(!num){
+    btn.disabled=true; btn.style.opacity=.6;
+    btn.innerHTML='<i class="fa-solid fa-triangle-exclamation"></i> Nomor Ayah & Wali kosong';
+  }else{
+    btn.disabled=false; btn.style.opacity=1;
+    btn.innerHTML=`<i class="fa-brands fa-whatsapp"></i> Buka WhatsApp (${who})`;
+    btn.onclick=()=>window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`,'_blank');
+  }
+  // set current status radio
+  const cur=String(d['Status Bergabung Grup WA Orang Tua']||'Belum Diundang').trim();
+  document.querySelectorAll('input[name="wastatus"]').forEach(r=>{
+    r.checked = r.value===cur; r.closest('label').classList.toggle('sel', r.checked);
+  });
+  openModal('waModal');
+}
+document.querySelectorAll('input[name="wastatus"]').forEach(r=>r.addEventListener('change',()=>{
+  document.querySelectorAll('#waStatusOpts label').forEach(l=>l.classList.remove('sel'));
+  r.closest('label').classList.add('sel');
+}));
+async function saveWaStatus(){
+  const sel=document.querySelector('input[name="wastatus"]:checked');
+  if(!sel){ toast('Pilih salah satu status.', true); return; }
+  loading(true);
+  try{
+    const out=await apiPost({action:'updateStatusWA', nisn:currentNisn, status:sel.value});
+    if(out.ok){ const d=findByNisn(currentNisn); if(d) d['Status Bergabung Grup WA Orang Tua']=sel.value;
+      renderStats();renderRecent();applyFilters(); closeModal('waModal'); toast('Status WA diperbarui.'); }
+    else toast(out.message,true);
+  }catch(e){ toast('Gagal menyimpan status.',true);} finally{ loading(false);}
+}
+
+/* ---- Catatan ---- */
+function openNote(nisn){
+  const d=findByNisn(nisn); if(!d) return;
+  currentNisn=nisn;
+  document.getElementById('noteSub').textContent = d['Nama Lengkap'];
+  document.getElementById('noteText').value = d['Catatan Guru']||'';
+  openModal('noteModal');
+}
+async function saveNote(){
+  const val=document.getElementById('noteText').value.trim();
+  loading(true);
+  try{
+    const out=await apiPost({action:'updateCatatan', nisn:currentNisn, catatan:val});
+    if(out.ok){ const d=findByNisn(currentNisn); if(d) d['Catatan Guru']=val;
+      applyFilters(); closeModal('noteModal'); toast('Catatan tersimpan.'); }
+    else toast(out.message,true);
+  }catch(e){ toast('Gagal menyimpan catatan.',true);} finally{ loading(false);}
+}
+
+/* ---- Edit ---- */
+function openEdit(nisn){
+  const d=findByNisn(nisn); if(!d) return;
+  currentNisn=nisn;
+  document.getElementById('editSub').textContent = d['Nama Lengkap'];
+  const body=document.getElementById('editBody');
+  const SELECTS={'Jenis Kelamin':['Laki-laki','Perempuan'],'Agama':['Islam','Kristen','Katolik','Hindu','Buddha','Konghucu']};
+  body.innerHTML = EDITABLE.map(k=>{
+    const full=['Alamat Lengkap','Nama Lengkap','Email','Ekstrakurikuler'].includes(k)?'full':'';
+    const opsional=['Nama Wali (Opsional)','Nomor HP Wali','Ekstrakurikuler'].includes(k);
+    const val=esc(d[k]);
+    let input;
+    if(SELECTS[k]) input=`<select class="f-select" data-k="${k}">${SELECTS[k].map(o=>`<option ${o===d[k]?'selected':''}>${o}</option>`).join('')}</select>`;
+    else if(k==='Alamat Lengkap') input=`<textarea class="f-area" data-k="${k}" style="min-height:70px">${val}</textarea>`;
+    else if(k==='Tanggal Lahir') input=`<input type="date" class="f-input" data-k="${k}" value="${val}">`;
+    else input=`<input class="f-input" data-k="${k}" value="${val}">`;
+    return `<div class="${full}"><label class="f-label">${k.replace(' (Opsional)','')} ${opsional?'':'<span class="req">*</span>'}</label>${input}</div>`;
+  }).join('');
+  openModal('editModal');
+}
+async function saveEdit(){
+  const data={};
+  document.querySelectorAll('#editBody [data-k]').forEach(el=>data[el.dataset.k]=el.value.trim());
+  // validasi ringan sisi klien
+  for(const f of EDITABLE){
+    const opsional=['Nama Wali (Opsional)','Nomor HP Wali','Ekstrakurikuler'].includes(f);
+    if(!opsional && !data[f]){ toast('Lengkapi field: '+f, true); return; }
+  }
+  loading(true);
+  try{
+    const out=await apiPost({action:'updateData', nisn:currentNisn, data});
+    if(out.ok){ closeModal('editModal'); toast('Data diperbarui.'); await loadAll(); }
+    else toast(out.message,true);
+  }catch(e){ toast('Gagal memperbarui data.',true);} finally{ loading(false);}
+}
+
+/* ---- Hapus ---- */
+async function delData(nisn){
+  const d=findByNisn(nisn);
+  if(!confirm(`Hapus data "${d?d['Nama Lengkap']:nisn}"? Tindakan ini tidak dapat dibatalkan.`)) return;
+  loading(true);
+  try{
+    const out=await apiPost({action:'hapusData', nisn});
+    if(out.ok){ toast('Data dihapus.'); await loadAll(); } else toast(out.message,true);
+  }catch(e){ toast('Gagal menghapus data.',true);} finally{ loading(false);}
+}
+
+/* ---- Export Excel ---- */
+function exportExcel(){
+  if(!filtered.length){ toast('Tidak ada data untuk diekspor.',true); return; }
+  const rows = filtered.map(d=>{ const o={}; COLS.forEach(c=>o[c]=d[c]??''); return o; });
+  const ws = XLSX.utils.json_to_sheet(rows, {header:COLS});
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Data Siswa');
+  const tgl = new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb, `Data_Siswa_${tgl}.xlsx`);
+  toast('File Excel berhasil diunduh.');
+}
+
+/* ---- Bagikan link formulir ---- */
+function copyFormLink(){
+  const url = FORM_URL && !FORM_URL.startsWith('GANTI') ? FORM_URL : '';
+  if(!url){ toast('Isi FORM_URL di kode terlebih dahulu.', true); return; }
+  navigator.clipboard.writeText(url).then(()=>toast('Link formulir disalin ke clipboard.'))
+    .catch(()=>prompt('Salin link formulir:', url));
+}
+
+/* ---- Modal utils ---- */
+function openModal(id){ document.getElementById(id).classList.add('show'); }
+function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('show'); }));
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') document.querySelectorAll('.overlay.show').forEach(o=>o.classList.remove('show')); });
+
+/* ---- Login (kata sandi) ---- */
+function showLogin(){
+  document.getElementById('loginOverlay').classList.add('show');
+  setTimeout(()=>document.getElementById('loginPass').focus(), 100);
+}
+function hideLogin(){ document.getElementById('loginOverlay').classList.remove('show'); }
+function doLogin(){
+  const val = document.getElementById('loginPass').value;
+  if(val === DASHBOARD_PASSWORD){
+    sessionStorage.setItem('gw_auth','1');
+    document.getElementById('loginError').style.display='none';
+    document.getElementById('loginPass').value='';
+    hideLogin();
+    loadAll();
+  }else{
+    document.getElementById('loginError').style.display='block';
+    const card=document.getElementById('loginCard');
+    card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
+    document.getElementById('loginPass').select();
+  }
+}
+function doLogout(){ sessionStorage.removeItem('gw_auth'); location.reload(); }
+function toggleLoginPass(){
+  const i=document.getElementById('loginPass'), ic=document.querySelector('#loginToggle i');
+  if(i.type==='password'){ i.type='text'; ic.className='fa-solid fa-eye-slash'; }
+  else{ i.type='password'; ic.className='fa-solid fa-eye'; }
+}
+document.getElementById('loginPass').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+
+/* ---- Init ---- */
+initSettingsUI();
+if(sessionStorage.getItem('gw_auth')==='1'){ loadAll(); }
+else{ showLogin(); }
+</script>
+</body>
+</html>
