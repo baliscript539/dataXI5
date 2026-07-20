@@ -173,7 +173,9 @@ footer{text-align:center;margin-top:26px;font-size:12px;color:var(--gray-400)}
         </div>
         <div class="field" data-for="Kelas">
           <label>Kelas <span class="req">*</span></label>
-          <input name="Kelas" placeholder="Contoh: X-1, XI IPA 2">
+          <input name="Kelas" value="XI.5" readonly tabindex="-1"
+                 style="background:var(--gray-100);color:var(--gray-500);cursor:not-allowed">
+          <div class="hint"><i class="fa-solid fa-lock" style="font-size:10px"></i> Kelas sudah ditetapkan, tidak dapat diubah</div>
           <div class="err-msg"></div>
         </div>
         <div class="field" data-for="Nomor Absen">
